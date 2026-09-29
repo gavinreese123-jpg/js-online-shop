@@ -47,6 +47,9 @@ function addToCart(productName) {
         cart.push(product);
         const message = productName + " was added to the cart.";
         console.log(message);
+
+        // Update the cart counter on the page
+        document.getElementById("cart-count").textContent = cart.length;
     }
 }
 
@@ -68,18 +71,76 @@ function filterByCategory(category) {
         return product.category === category;
     });
 
-    for (const product of filteredProducts) {
-        console.log(product.productName + " - $" + product.price.toFixed(2));
+    // Display only the products that match the category
+    renderProducts(filteredProducts);
+}
+
+// Build product cards and add them to the page
+function renderProducts(productsToDisplay) {
+    const productGrid = document.getElementById("product-grid");
+
+    // Clear the product grid before rendering new cards
+    productGrid.innerHTML = "";
+
+    // Create a card for each product
+    for (const product of productsToDisplay) {
+        const card = document.createElement("div");
+
+        // Create the product name
+        const name = document.createElement("h2");
+        name.textContent = product.productName;
+
+        // Create the product category
+        const category = document.createElement("p");
+        category.textContent = "Category: " + product.category;
+
+        // Create the product price
+        const price = document.createElement("p");
+        price.textContent = "Price: $" + product.price.toFixed(2);
+
+        // Create the Add to Cart button
+        const button = document.createElement("button");
+        button.textContent = "Add to Cart";
+
+        // Run addToCart when the button is clicked
+        button.addEventListener("click", function() {
+            addToCart(product.productName);
+        });
+
+        // Add the product information and button to the card
+        card.appendChild(name);
+        card.appendChild(category);
+        card.appendChild(price);
+        card.appendChild(button);
+
+        // Add the completed card to the product grid
+        productGrid.appendChild(card);
     }
 }
 
-// Test the different add-to-cart results
-addToCart("Running Shoes");
-addToCart("Chocolate Cake");
-addToCart("Wireless Headphones");
+// Create the category filter buttons
+function renderCategoryButtons() {
+    const categoryContainer = document.getElementById("category-filters");
+    const categories = ["All", "Footwear", "Food item"];
 
-// Display the cart
-viewCart();
+    // Create a button for each category
+    for (const category of categories) {
+        const button = document.createElement("button");
+        button.textContent = category;
 
-// Display products in the Footwear category
-filterByCategory("Footwear");
+        // Re-render the products when a category is selected
+        button.addEventListener("click", function() {
+            if (category === "All") {
+                renderProducts(products);
+            } else {
+                filterByCategory(category);
+            }
+        });
+
+        categoryContainer.appendChild(button);
+    }
+}
+
+// Display the category buttons and products when the page loads
+renderCategoryButtons();
+renderProducts(products);
