@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,21 +7,27 @@
     <title>JavaScript Online Shop</title>
 </head>
 <body>
-    <!-- Navigation links and cart counter -->
     <nav>
         <a href="#">Home</a>
-        <a href="#">Shop</a>
-        <a href="#">Cart <span id="cart-count">0</span></a>
+        <a href="#shop">Shop</a>
+        <a href="#cart">Cart <span id="cart-count">0</span></a>
     </nav>
 
     <h1>JavaScript Online Shop</h1>
 
-    <!-- Category filter buttons will be added here -->
-    <div id="category-filters"></div>
+    <section id="shop">
+        <h2>Products</h2>
+        <div id="category-filters"></div>
+        <div id="product-grid"></div>
+    </section>
 
-    <!-- Product cards will be added here -->
-    <div id="product-grid"></div>
     <p id="error-message" aria-live="polite"></p>
+
+    <section id="cart">
+        <h2>Your Cart</h2>
+        <div id="cart-items"></div>
+        <p id="cart-total">Cart Total: $0.00</p>
+    </section>
 
     <script type="module" src="app.js"></script>
 </body>

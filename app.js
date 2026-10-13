@@ -1,80 +1,82 @@
-import { products } from "./products.js";
-import { addToCart, viewCart, cart } from "./cart.js";
 
-// Build product cards and add them to the page
+import { loadProducts } from "./products.js";
+import { addToCart, removeFromCart, cart } from "./cart.js";
+
+let products = [];
+
+// Display products on the page
 function renderProducts(productsToDisplay) {
     const productGrid = document.getElementById("product-grid");
-
-    // Clear the product grid before rendering new cards
     productGrid.innerHTML = "";
 
-    // Create a card for each product
     for (const product of productsToDisplay) {
         const card = document.createElement("div");
 
-        // Create the product name
         const name = document.createElement("h2");
         name.textContent = product.productName;
 
-        // Create the product category
         const category = document.createElement("p");
         category.textContent = "Category: " + product.category;
 
-        // Create the product price
         const price = document.createElement("p");
         price.textContent = "Price: $" + product.price.toFixed(2);
 
-        // Create the Add to Cart button
         const button = document.createElement("button");
         button.textContent = "Add to Cart";
 
-        // Run addToCart when the button is clicked
         button.addEventListener("click", function() {
             const errorMessage = document.getElementById("error-message");
 
             try {
-                addToCart(product.productName);
+                addToCart(product);
                 errorMessage.textContent = "";
-                document.getElementById("cart-count").textContent = cart.length;
+                updateCartCount();
+                renderCart();
             } catch (error) {
-                errorMessage.textContent = "Sorry, " + error.message;
+                errorMessage.textContent = error.message;
             } finally {
                 console.log("Add to Cart attempt completed.");
             }
         });
 
-        // Add the product information and button to the card
         card.appendChild(name);
         card.appendChild(category);
         card.appendChild(price);
         card.appendChild(button);
 
-        // Add the completed card to the product grid
         productGrid.appendChild(card);
     }
 }
 
-// Find products that match the selected category
+// Filter products by category
 function filterByCategory(category) {
     const filteredProducts = products.filter(function(product) {
         return product.category === category;
     });
 
-    // Display only the products that match the category
     renderProducts(filteredProducts);
 }
 
-// Create the category filter buttons
+// Create buttons for the available categories
 function renderCategoryButtons() {
     const categoryContainer = document.getElementById("category-filters");
-    const categories = ["All", "Footwear", "Food item"];
+    categoryContainer.innerHTML = "";
 
-    // Create a button for each category
+    const categories = ["All"];
+
+    for (const product of products) {
+        if (!categories.includes(product.category)) {
+            categories.push(product.category);
+        }
+    }
+
     for (const category of categories) {
         const button = document.createElement("button");
-        button.textContent = category;
 
-        // Re-render the products when a category is selected
+        button.textContent = category === "All"
+            ? "All"
+            : category.charAt(0).toUpperCase() + category.slice(1);
+
         button.addEventListener("click", function() {
             if (category === "All") {
                 renderProducts(products);
@@ -87,6 +89,70 @@ function renderCategoryButtons() {
     }
 }
 
-// Display the category buttons and products when the page loads
-renderCategoryButtons();
-renderProducts(products);
+// Update the cart counter using total quantities
+function updateCartCount() {
+    let count = 0;
+
+    for (const item of cart) {
+        count += item.quantity;
+    }
+
+    document.getElementById("cart-count").textContent = count;
+}
+
+// Display cart items and calculate the total
+function renderCart() {
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+
+    cartItems.innerHTML = "";
+    let total = 0;
+
+    if (cart.length === 0) {
+        cartItems.textContent = "Your cart is empty.";
+    }
+
+    for (const item of cart) {
+        const cartItem = document.createElement("div");
+        const itemTotal = item.price * item.quantity;
+
+        const itemName = document.createElement("p");
+        itemName.textContent =
+            item.productName + " x " + item.quantity +
+            " - $" + itemTotal.toFixed(2);
+
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove";
+
+        removeButton.addEventListener("click", function() {
+            removeFromCart(item.productName);
+            updateCartCount();
+            renderCart();
+        });
+
+        cartItem.appendChild(itemName);
+        cartItem.appendChild(removeButton);
+        cartItems.appendChild(cartItem);
+
+        total += itemTotal;
+    }
+
+    cartTotal.textContent = "Cart Total: $" + total.toFixed(2);
+}
+
+// Load API data before displaying the shop
+async function initializeShop() {
+    try {
+        products = await loadProducts();
+    } catch (error) {
+        document.getElementById("error-message").textContent = error.message;
+        products = [];
+    }
+
+    renderCategoryButtons();
+    renderProducts(products);
+    updateCartCount();
+    renderCart();
+}
+
+initializeShop();
